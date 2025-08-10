@@ -22,6 +22,4 @@ class TicketsViewModel(private val repo: FirestoreRepository): ViewModel() {
         val q = query.lowercase().trim()
         return _tickets.value.filter { it.route.lowercase().contains(q) || it.date.contains(q) }
     }
-
-
 }
