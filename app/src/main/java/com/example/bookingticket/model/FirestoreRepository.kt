@@ -109,6 +109,7 @@ class FirestoreRepository(private val db: FirebaseFirestore) {
         awaitClose { listener.remove() }
     }
 
+<<<<<<< HEAD
     suspend fun isSeatTaken(ticketId: String, seatNumber: Int): Boolean {
         if (seatNumber <= 0) return false
         val snap = ticketsCol.document(ticketId)
@@ -117,5 +118,15 @@ class FirestoreRepository(private val db: FirebaseFirestore) {
             .get()
             .await()
         return !snap.isEmpty
+=======
+
+    fun observeTicket(ticketId: String, onUpdate: (Ticket?) -> Unit): ListenerRegistration {
+        return ticketsCol.document(ticketId)
+            .addSnapshotListener { snap, e ->
+                if (e != null) return@addSnapshotListener
+                val ticket = snap?.toObject(Ticket::class.java)?.copy(id = snap.id)
+                onUpdate(ticket)
+            }
+>>>>>>> a90d225 (booking by click)
     }
 }
