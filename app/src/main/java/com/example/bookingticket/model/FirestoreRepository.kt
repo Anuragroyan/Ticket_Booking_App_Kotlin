@@ -4,6 +4,7 @@ import com.example.bookingticket.data.Passenger
 import com.example.bookingticket.data.Ticket
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.ListenerRegistration
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -22,10 +23,6 @@ class FirestoreRepository(private val db: FirebaseFirestore) {
         return snap.toObject(Ticket::class.java)?.copy(id = snap.id)
     }
 
-    suspend fun listTickets(): List<Ticket> {
-        val snap = ticketsCol.get().await()
-        return snap.documents.mapNotNull { it.toObject(Ticket::class.java)?.copy(id = it.id) }
-    }
 
     /**
      * Adds a passenger inside a transaction while ensuring seatNumber uniqueness for the ticket.
@@ -74,6 +71,21 @@ class FirestoreRepository(private val db: FirebaseFirestore) {
             .await()
     }
 
+    fun observePassengers(
+        ticketId: String,
+        onUpdate: (List<Passenger>) -> Unit
+    ): ListenerRegistration {
+        return ticketsCol.document(ticketId)
+            .collection("passengers")
+            .addSnapshotListener { snap, e ->
+                if (e != null) return@addSnapshotListener
+                val list = snap?.documents?.mapNotNull {
+                    it.toObject(Passenger::class.java)?.copy(id = it.id)
+                } ?: emptyList()
+                onUpdate(list)
+            }
+    }
+
     suspend fun listPassengers(ticketId: String): List<Passenger> {
         val snap = ticketsCol.document(ticketId).collection("passengers").get().await()
         return snap.documents.mapNotNull { it.toObject(Passenger::class.java)?.copy(id = it.id) }
@@ -109,17 +121,6 @@ class FirestoreRepository(private val db: FirebaseFirestore) {
         awaitClose { listener.remove() }
     }
 
-<<<<<<< HEAD
-    suspend fun isSeatTaken(ticketId: String, seatNumber: Int): Boolean {
-        if (seatNumber <= 0) return false
-        val snap = ticketsCol.document(ticketId)
-            .collection("passengers")
-            .whereEqualTo("seatNumber", seatNumber)
-            .get()
-            .await()
-        return !snap.isEmpty
-=======
-
     fun observeTicket(ticketId: String, onUpdate: (Ticket?) -> Unit): ListenerRegistration {
         return ticketsCol.document(ticketId)
             .addSnapshotListener { snap, e ->
@@ -127,6 +128,5 @@ class FirestoreRepository(private val db: FirebaseFirestore) {
                 val ticket = snap?.toObject(Ticket::class.java)?.copy(id = snap.id)
                 onUpdate(ticket)
             }
->>>>>>> a90d225 (booking by click)
     }
 }
