@@ -1,4 +1,6 @@
-# 🚌 Ticket Booking App is a real-time bus ticket booking application built with Firebase, featuring a RedBus-inspired UI, live seat availability, and seat validation. 
+# 🚌 Ticket Booking App
+
+# Ticket Booking App is a real-time bus ticket booking application built with Firebase, featuring a RedBus-inspired UI, live seat availability, and seat validation. 
 It prevents duplicate seat bookings by ensuring each seat can be assigned to only one passenger at a time.
 
 # ✨ Features
